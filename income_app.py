@@ -426,7 +426,7 @@ with col3:
                     labels={'Value': 'Indicator Value'},# Update y-axis label
                     hover_name="Country"
                     )
-    
+
     # Move legend 
     fig.update_layout(legend=dict(
        # orientation="h",
