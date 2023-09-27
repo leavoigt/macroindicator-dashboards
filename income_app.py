@@ -380,7 +380,6 @@ with col3:
                                            'Income share held by fourth 20%',
                                            'Income share held by lowest 20%',
                                            ])
-    
     ### Group data by year
     area1_data = area1_data.groupby([chart1_data.Indicator],group_keys=False,sort=False).apply(pd.DataFrame.sort_values,'Year')
 
@@ -394,6 +393,7 @@ with col3:
                   facet_col_wrap=2,
                   hover_name="Country"
                   )
+    
     # Fix y-axis to always show (100%)
     fig.update_yaxes(range=[0, 100])
 
