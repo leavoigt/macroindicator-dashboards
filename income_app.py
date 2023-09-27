@@ -380,8 +380,7 @@ with col3:
                                            'Income share held by fourth 20%',
                                            'Income share held by lowest 20%',
                                            ])
-
-
+    
     ### Group data by year
     area1_data = area1_data.groupby([chart1_data.Indicator],group_keys=False,sort=False).apply(pd.DataFrame.sort_values,'Year')
 
