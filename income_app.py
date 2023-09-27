@@ -31,8 +31,7 @@ df_income['Year'] = df_income['Year'].astype(int)
 #------------------------------ Functions  ------------------------------------#
 
 # Data Selection 
-
-def get_filtered_data(country_selec, start_year_selec, end_year_selec, indicator_selec):
+def get_filtered_data(country_selec, peer_selec, region_select, start_year_selec, end_year_selec, indicator_selec):
 
     """
     Function takes the user selection of the dashboard as an input and retrieves the
@@ -40,21 +39,30 @@ def get_filtered_data(country_selec, start_year_selec, end_year_selec, indicator
 
     """
 
-    # Turn country selection into list if not list 
+    # Turn country, peer countries and region selection into list if not list:
     if isinstance(country_selec, str):
         country_selec = [country_selec]
+    
+    if isinstance(peer_selec, str):
+        peer_selec = [peer_selec]
+    
+    if isinstance(region_select, str):
+        region_select = [region_select]
+
+    # Combine selected countries
+    countries_selec = country_selec + peer_selec + region_select
 
     # Create a dataframe with all years and indicators first
     ## This is necessary to add the missing years with "None" values
     df_empty = pd.DataFrame([(year, indicator, country) 
                             for year in range(start_year_selec, end_year_selec+1)
                             for indicator in indicator_selec
-                            for country in country_selec],
+                            for country in countries_selec],
                             columns=['Year', 'Indicator', 'Country'])
 
     
     # Retrieve the selected data from df
-    df_fltr = df_income[(df_income['Country'].isin(country_selec)) & 
+    df_fltr = df_income[(df_income['Country'].isin(countries_selec)) & 
                        (df_income['Year'] >= start_year_selec) & 
                        (df_income['Indicator'].isin(indicator_selec)) &
                        (df_income['Year'] <= end_year_selec)]
@@ -71,6 +79,7 @@ def get_filtered_data(country_selec, start_year_selec, end_year_selec, indicator
     # Turn year column into datetime format
 
     return df_merged
+
 
 # Year Selection 
 def get_years(country_input): 
@@ -216,7 +225,7 @@ with col1:
 with col1: 
 
     # Get data
-    chart1_data = get_filtered_data(selected_country, selected_start_year, selected_end_year, ['Labour income share estimates'])
+    chart1_data = get_filtered_data(selected_country, selected_peer, selected_region, selected_start_year, selected_end_year, ['Labour income share estimates'])
     
     ### Group data by year
     chart1_data = chart1_data.groupby([chart1_data.Indicator],group_keys=False,sort=False).apply(pd.DataFrame.sort_values,'Year')
@@ -225,7 +234,7 @@ with col1:
     fig = px.line(chart1_data,
                     x="Year", 
                     y="Value",   
-                    color='Indicator',
+                    color='Country',
                     hover_name="Value"
                     )
     
@@ -266,7 +275,7 @@ with col3:
     #st.subheader("Gini Coefficient")    
 
     # Get data
-    chart2_data = get_filtered_data(selected_country, selected_start_year, selected_end_year, ['Gini index'])
+    chart2_data = get_filtered_data(selected_country, selected_peer, selected_region, selected_start_year, selected_end_year, ['Gini index'])
     
     ### Group data by year
     chart2_data = chart2_data.groupby([chart2_data.Indicator],group_keys=False,sort=False).apply(pd.DataFrame.sort_values,'Year')
@@ -327,19 +336,19 @@ with col1:
 with col1: 
 
     # Get data
-    chart3_data = get_filtered_data(selected_country, selected_start_year, selected_end_year, ['GDP per capita', 'GNI per capita'])
+    chart3_data = get_filtered_data(selected_country, selected_peer, selected_region, selected_start_year, selected_end_year, ['GDP per capita', 'GNI per capita'])
     
     ### Group data by year
-    chart3_data = chart3_data.groupby([chart3_data.Indicator],group_keys=False,sort=False).apply(pd.DataFrame.sort_values,'Year')
+    chart3_data = chart3_data.groupby(['Indicator', 'Country'],group_keys=False,sort=False).apply(pd.DataFrame.sort_values,'Year')
     
     # Configure plot
     fig = px.line(chart3_data,
-                    x="Year", 
-                    y="Value",   
-                    color='Indicator',
-                    hover_name="Value"
-                    )
-    
+                  x='Year', 
+                  y='Value',
+                  color='Indicator',
+                  hover_name='Country'
+                  )
+
     # Move legend 
     fig.update_layout(legend=dict(
        # orientation="h",
@@ -361,7 +370,7 @@ with col3:
     st.subheader("Income Shares GNI per Capita")
 
     # Get data
-    area1_data =  get_filtered_data(selected_country, selected_start_year, selected_end_year, 
+    area1_data =  get_filtered_data(selected_country, selected_peer, selected_region, selected_start_year, selected_end_year, 
                                           ['Income share held by highest 20%', 
                                            'Income share held by second 20%',
                                            'Income share held by third 20%',
@@ -378,7 +387,7 @@ with col3:
     fig = px.area(area1_data,
                   x="Year", 
                   y="Value", 
-                  color='Indicator',
+                  color='Country',
                   hover_name="Value"
                   )
     # Fix y-axis to always show (100%)
@@ -399,7 +408,7 @@ with col3:
     # Subheader for poverty share
     st.subheader("Share of population that lives with less than 6$ per person a day")
     # Get data for the poverty share
-    chart4_data = get_filtered_data(selected_country, selected_start_year, selected_end_year, ['Poverty Share'])
+    chart4_data = get_filtered_data(selected_country, selected_peer, selected_region, selected_start_year, selected_end_year, ['Poverty Share'])
     
     ### Group data by year
     chart4_data = chart4_data.groupby([chart4_data.Indicator],group_keys=False,sort=False).apply(pd.DataFrame.sort_values,'Year')
@@ -408,7 +417,7 @@ with col3:
     fig = px.line(chart4_data,
                     x="Year", 
                     y="Value",   
-                    color='Indicator',
+                    color='Country',
                     hover_name="Value"
                     )
     
